@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mission Chain Controller</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+        }
+        .button {
+            padding: 12px 24px;
+            margin: 15px;
+            font-size: 16px;
+            cursor: pointer;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            min-width: 200px;
+        }
+        .button1 {
+            background-color: #4CAF50;
+        }
+        .button1:hover {
+            background-color: #3e8e41;
+        }
+        .button2 {
+            background-color: #2196F3;
+        }
+        .button2:hover {
+            background-color: #0b7dda;
+        }
+        .message {
+            margin: 30px auto;
+            padding: 20px;
+            max-width: 800px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            text-align: left;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #2196F3;
+        }
+        .status {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .success {
+            color: #4CAF50;
+        }
+        .error {
+            color: #f44336;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Mission Chain Controller</h1>
+    
+    <button onclick="startMission('c30799f8-4be6-11f0-81ec-0242ac110002')" class="button button1">Start Mission Chain 1</button>
+    <button onclick="startMission('a8fc5275-4be6-11f0-81ec-0242ac110002')" class="button button2">Start Mission Chain 2</button>
+    
+    <div class="message" id="messageContainer">
+        <!-- Output of mission start status will go here -->
+    </div>
+
+    <script>
+        async function startMission(missionChainId) {
+            const apiUrl = 'http://192.168.1.204:8080/api/v3/missionWorkChains';
+            const postData = { missionChainId: missionChainId };
+
+            try {
+                const startTime = Date.now();
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(postData)
+                });
+                const endTime = Date.now();
+                const duration = endTime - startTime; // Time in milliseconds
+                
+                if (!response.ok) {
+                    throw new Error(`API Request failed with status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Display mission status
+                const statusElement = document.createElement('div');
+                statusElement.classList.add('status', 'success');
+                statusElement.innerHTML = `✓ Mission Chain ${missionChainId} Started Successfully <small>(${duration}ms)</small>`;
+                const messageContainer = document.getElementById('messageContainer');
+                messageContainer.innerHTML = '';  // Clear previous content
+                messageContainer.appendChild(statusElement);
+
+                // Display API request and response data
+                const apiResponse = document.createElement('pre');
+                apiResponse.innerHTML = `POST ${apiUrl}\n${JSON.stringify(postData, null, 2)}\n\nResponse:\n${JSON.stringify(data, null, 2)}`;
+                messageContainer.appendChild(apiResponse);
+            } catch (error) {
+                // Display error message if request fails
+                const messageContainer = document.getElementById('messageContainer');
+                messageContainer.innerHTML = `<div class="status error">✗ Error: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
